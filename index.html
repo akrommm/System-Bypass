@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LMNS Studio — Audio Editor Pribadi</title>
+  <!-- Fonts & Icons -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- LAME MP3 encoder -->
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <!-- Simple Header -->
+  <header class="header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-logo">
+          <img src="logo/1.png" alt="LMNS Studio Logo">
+        </div>
+        <div class="brand-text">
+          <h1>LMNS <span>STUDIO</span></h1>
+          <p>Audio Editor Pribadi</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-icon" id="clearAllBtn" title="Bersihkan Semua">
+          <i class="bi bi-trash"></i>
+        </button>
+        <span class="header-status">
+          <span class="status-dot"></span>
+          Siap
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <div class="workspace">
+      <!-- Left Panel - Track List -->
+      <section class="panel track-panel">
+        <div class="panel-head">
+          <div class="panel-title">
+            <i class="bi bi-soundwave"></i>
+            <h2>Trek Audio</h2>
+          </div>
+          <span class="count-pill" id="trackCount">0 file</span>
+        </div>
+
+        <label class="drop-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept="audio/*" multiple>
+          <div class="drop-content">
+            <div class="drop-icon">
+              <i class="bi bi-cloud-arrow-up"></i>
+            </div>
+            <p class="drop-title">Klik atau seret file audio ke sini</p>
+            <p class="drop-sub">MP3 · WAV · OGG · AAC · M4A</p>
+            <span class="drop-badge">
+              <i class="bi bi-plus-circle"></i> Multi-file
+            </span>
+          </div>
+        </label>
+
+        <div class="track-list" id="trackList">
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">
+              <i class="bi bi-music-note-beamed"></i>
+            </div>
+            <p>Belum ada trek audio</p>
+            <span>Upload file untuk mulai mengedit</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel - Controls -->
+      <aside class="console">
+        <!-- Parameters Card -->
+        <div class="console-card">
+          <div class="console-head">
+            <i class="bi bi-sliders"></i>
+            <span>Parameter</span>
+          </div>
+
+          <div class="control-group">
+            <div class="control-block">
+              <div class="control-row">
+                <span class="control-name">
+                  <i class="bi bi-speedometer2"></i> Kecepatan
+                </span>
+                <span class="control-value" id="speedVal">1.0×</span>
+              </div>
+              <input type="range" id="speed" min="0.5" max="3" step="0.1" value="1">
+            </div>
+
+            <div class="control-block">
+              <div class="control-row">
+                <span class="control-name">
+                  <i class="bi bi-volume-up"></i> Volume
+                </span>
+                <span class="control-value" id="ampVal">0 dB</span>
+              </div>
+              <input type="range" id="amp" min="-10" max="10" value="0">
+            </div>
+
+            <div class="control-block">
+              <div class="control-row">
+                <span class="control-name">
+                  <i class="bi bi-arrow-up-right"></i> Fade In
+                </span>
+                <span class="control-value" id="fadeInVal">0.0s</span>
+              </div>
+              <input type="range" id="fadeIn" min="0" max="5" step="0.1" value="0">
+            </div>
+
+            <div class="control-block">
+              <div class="control-row">
+                <span class="control-name">
+                  <i class="bi bi-arrow-down-right"></i> Fade Out
+                </span>
+                <span class="control-value" id="fadeOutVal">0.0s</span>
+              </div>
+              <input type="range" id="fadeOut" min="0" max="5" step="0.1" value="0">
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <div class="control-block">
+              <div class="toggle-row">
+                <span class="control-name">
+                  <i class="bi bi-arrow-left-right"></i> Reverse
+                </span>
+                <label class="switch">
+                  <input type="checkbox" id="reverseToggle">
+                  <span class="track-sw"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="control-block">
+              <div class="toggle-row">
+                <span class="control-name">
+                  <i class="bi bi-graph-up"></i> Auto-Level
+                </span>
+                <label class="switch">
+                  <input type="checkbox" id="autoLevelToggle">
+                  <span class="track-sw"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <button class="reset-link" id="resetBtn">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            Reset Parameter
+          </button>
+        </div>
+
+        <!-- Export Card -->
+        <div class="console-card">
+          <div class="console-head">
+            <i class="bi bi-download"></i>
+            <span>Ekspor</span>
+          </div>
+
+          <select class="format-select" id="format">
+            <option value="mp3">MP3 — Kecil</option>
+            <option value="wav">WAV — HD</option>
+            <option value="ogg">OGG — Standar</option>
+          </select>
+
+          <button class="btn-download" id="downloadBtn" disabled>
+            <i class="bi bi-download"></i>
+            <span id="downloadBtnLabel">Download</span>
+          </button>
+        </div>
+
+        <!-- Now Playing Card -->
+        <div class="console-card now-playing-card">
+          <div class="console-head">
+            <i class="bi bi-activity"></i>
+            <span>Playing</span>
+          </div>
+
+          <div class="now-playing-content">
+            <div class="now-icon">
+              <i class="bi bi-music-note"></i>
+            </div>
+            <div class="now-info">
+              <div class="now-name" id="nowName">Tidak ada</div>
+              <div class="now-sub" id="nowSub">Klik play</div>
+            </div>
+          </div>
+
+          <div class="meter-row" id="meterRow">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Simple Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <span>LMNS Studio — Audio Editor Pribadi</span>
+        <span class="footer-separator">•</span>
+        <span>by A-Labs</span>
+      </div>
+      <div class="footer-shortcut">
+        <span>Shortcut: Spasi = Play/Stop</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+
+</html>
