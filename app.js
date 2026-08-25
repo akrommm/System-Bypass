@@ -13,12 +13,19 @@
   const trackCount = document.getElementById("trackCount");
   const downloadBtn = document.getElementById("downloadBtn");
   const downloadBtnLabel = document.getElementById("downloadBtnLabel");
+
+  // Parameter controls
   const speedInput = document.getElementById("speed");
-  const ampInput = document.getElementById("amp");
+  const speedValDisplay = document.getElementById("speedVal");
+  const amplificationInput = document.getElementById("amp");
+  const amplificationValDisplay = document.getElementById("ampVal");
   const fadeInInput = document.getElementById("fadeIn");
+  const fadeInValDisplay = document.getElementById("fadeInVal");
   const fadeOutInput = document.getElementById("fadeOut");
+  const fadeOutValDisplay = document.getElementById("fadeOutVal");
   const reverseToggle = document.getElementById("reverseToggle");
   const autoLevelToggle = document.getElementById("autoLevelToggle");
+
   const formatSelect = document.getElementById("format");
   const resetBtn = document.getElementById("resetBtn");
   const clearAllBtn = document.getElementById("clearAllBtn");
@@ -352,7 +359,7 @@
 
     const buffer = getEffectiveBuffer(item);
     const speedVal = parseFloat(speedInput.value);
-    const ampDb = parseInt(ampInput.value);
+    const amplificationDb = parseInt(amplificationInput.value);
     const fadeIn = parseFloat(fadeInInput.value);
     const fadeOut = parseFloat(fadeOutInput.value);
 
@@ -364,7 +371,7 @@
     const analyser = audioCtx.createAnalyser();
     analyser.fftSize = 64;
 
-    const ampLinear = Math.pow(10, ampDb / 20);
+    const ampLinear = Math.pow(10, amplificationDb / 20);
     const finalDuration = buffer.duration / speedVal;
     const fi = Math.min(fadeIn, finalDuration * 0.45);
     const fo = Math.min(fadeOut, finalDuration * 0.45);
@@ -505,27 +512,23 @@
 
   // Sliders
   speedInput.addEventListener("input", function () {
-    document.getElementById("speedVal").textContent =
-      parseFloat(this.value).toFixed(1) + "×";
+    speedValDisplay.textContent = parseFloat(this.value).toFixed(1) + "×";
   });
   speedInput.addEventListener("change", resetDownloadedStatuses);
 
-  ampInput.addEventListener("input", function () {
+  amplificationInput.addEventListener("input", function () {
     const v = parseInt(this.value);
-    document.getElementById("ampVal").textContent =
-      (v >= 0 ? "+" : "") + v + " dB";
+    amplificationValDisplay.textContent = (v >= 0 ? "+" : "") + v + " dB";
   });
-  ampInput.addEventListener("change", resetDownloadedStatuses);
+  amplificationInput.addEventListener("change", resetDownloadedStatuses);
 
   fadeInInput.addEventListener("input", function () {
-    document.getElementById("fadeInVal").textContent =
-      parseFloat(this.value).toFixed(1) + "s";
+    fadeInValDisplay.textContent = parseFloat(this.value).toFixed(1) + "s";
   });
   fadeInInput.addEventListener("change", resetDownloadedStatuses);
 
   fadeOutInput.addEventListener("input", function () {
-    document.getElementById("fadeOutVal").textContent =
-      parseFloat(this.value).toFixed(1) + "s";
+    fadeOutValDisplay.textContent = parseFloat(this.value).toFixed(1) + "s";
   });
   fadeOutInput.addEventListener("change", resetDownloadedStatuses);
 
@@ -540,8 +543,8 @@
   resetBtn.addEventListener("click", () => {
     speedInput.value = 1;
     speedInput.dispatchEvent(new Event("input"));
-    ampInput.value = 0;
-    ampInput.dispatchEvent(new Event("input"));
+    amplificationInput.value = 0;
+    amplificationInput.dispatchEvent(new Event("input"));
     fadeInInput.value = 0;
     fadeInInput.dispatchEvent(new Event("input"));
     fadeOutInput.value = 0;
@@ -621,7 +624,7 @@
     downloadBtn.querySelector("i").className = "bi bi-hourglass-split";
 
     const speedVal = parseFloat(speedInput.value);
-    const ampVal = parseInt(ampInput.value);
+    const amplificationVal = parseInt(amplificationInput.value);
     const fadeIn = parseFloat(fadeInInput.value);
     const fadeOut = parseFloat(fadeOutInput.value);
     const reverseOn = reverseToggle.checked;
@@ -643,7 +646,7 @@
         const blob = await processAndExport(
           item,
           speedVal,
-          ampVal,
+          amplificationVal,
           fadeIn,
           fadeOut,
           reverseOn,
@@ -696,7 +699,7 @@
   async function processAndExport(
     item,
     speedVal,
-    ampDb,
+    amplificationDb,
     fadeIn,
     fadeOut,
     reverseOn,
@@ -720,7 +723,7 @@
     source.playbackRate.value = speedVal;
 
     const gain = offlineCtx.createGain();
-    const ampLinear = Math.pow(10, ampDb / 20);
+    const ampLinear = Math.pow(10, amplificationDb / 20);
     const fi = Math.min(fadeIn, finalDuration * 0.45);
     const fo = Math.min(fadeOut, finalDuration * 0.45);
 

@@ -144,7 +144,7 @@ body::after {
   font-weight: 700;
   letter-spacing: 0.5px;
   margin: 0;
-  background: linear-gradient(135deg, #ffffff 0%, #31e0f0 50%, #ff4f9a 100%);
+  background: #fff;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
