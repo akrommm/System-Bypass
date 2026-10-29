@@ -4,227 +4,357 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LMNS Studio — Audio Editor</title>
-  <!-- Fonts & Icons -->
+  <title>A-LABS Audio Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
     rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <!-- LAME MP3 encoder -->
   <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
-  <!-- Styles -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <!-- Simple Header -->
+  <!-- Loading Screen -->
+  <div class="loader" id="loader">
+    <div class="loader-inner">
+      <div class="loader-logo">
+        <img src="logo/1.png" alt="A-LABS"
+          onerror="this.style.display='none';this.parentElement.classList.add('no-logo')">
+        <i class="bi bi-soundwave loader-fallback"></i>
+      </div>
+      <div class="loader-title">A-LABS <span>Audio</span></div>
+      <div class="loader-bar">
+        <div class="loader-fill" id="loaderFill"></div>
+      </div>
+      <div class="loader-status" id="loaderStatus">Menyiapkan editor…</div>
+    </div>
+  </div>
+
+  <!-- Ambient background -->
+  <div class="bg-aurora" aria-hidden="true">
+    <span class="aurora a1"></span>
+    <span class="aurora a2"></span>
+    <span class="aurora a3"></span>
+  </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
   <header class="header">
     <div class="header-container">
       <div class="brand">
-        <div class="brand-logo">
-          <img src="logo/1.png" alt="LMNS Studio Logo">
-        </div>
+        <img class="brand-logo" src="logo/1.png" alt="A-LABS Logo" onerror="this.style.display='none'">
         <div class="brand-text">
-          <h1>LMNS <span>STUDIO</span></h1>
+          <h1>A-LABS <span>Audio</span></h1>
           <p>Audio Editor</p>
         </div>
       </div>
 
-      <div class="header-actions">
-        <button class="btn-icon" id="clearAllBtn" title="Bersihkan Semua">
-          <i class="bi bi-trash"></i>
+      <nav class="nav-tabs" role="tablist" aria-label="Navigasi utama">
+        <button class="nav-tab active" data-tab="studio" role="tab" aria-selected="true">
+          <i class="bi bi-sliders2"></i><span>Studio</span>
         </button>
-        <span class="header-status">
+        <button class="nav-tab" data-tab="library" role="tab" aria-selected="false">
+          <i class="bi bi-collection"></i><span>Library</span>
+        </button>
+        <button class="nav-tab" data-tab="guide" role="tab" aria-selected="false">
+          <i class="bi bi-book"></i><span>Panduan</span>
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn-icon" id="themeBtn" title="Ganti Tema"><i class="bi bi-moon-stars"></i></button>
+        <button class="btn-icon danger" id="clearAllBtn" title="Bersihkan Semua"><i class="bi bi-trash3"></i></button>
+        <span class="header-status" id="headerStatus" title="Status editor">
           <span class="status-dot"></span>
-          Siap
+          <span id="headerStatusText">Siap</span>
         </span>
       </div>
     </div>
   </header>
 
-  <!-- Main Content -->
   <main class="main-container">
-    <div class="workspace">
-      <!-- Left Panel - Track List -->
-      <section class="panel track-panel">
-        <div class="panel-head">
-          <div class="panel-title">
-            <i class="bi bi-soundwave"></i>
-            <h2>Trek Audio</h2>
-          </div>
-          <span class="count-pill" id="trackCount">0 file</span>
+
+    <!-- ═══════════ TAB: STUDIO ═══════════ -->
+    <section class="tab-page active" id="tab-studio">
+      <section class="stats">
+        <div class="stat" data-accent="cyan">
+          <div class="stat-icon"><i class="bi bi-collection-play"></i></div>
+          <div class="stat-body"><b id="statFiles">0</b><span>File</span></div>
+          <div class="stat-glow"></div>
         </div>
-
-        <label class="drop-zone" id="uploadZone">
-          <input type="file" id="fileInput" accept="audio/*" multiple>
-          <div class="drop-content">
-            <div class="drop-icon">
-              <i class="bi bi-cloud-arrow-up"></i>
-            </div>
-            <p class="drop-title">Klik atau seret file audio ke sini</p>
-            <p class="drop-sub">MP3 · WAV · OGG · AAC · M4A</p>
-            <span class="drop-badge">
-              <i class="bi bi-plus-circle"></i> Multi-file
-            </span>
-          </div>
-        </label>
-
-        <div class="track-list" id="trackList">
-          <div class="empty-state" id="emptyState">
-            <div class="empty-icon">
-              <i class="bi bi-music-note-beamed"></i>
-            </div>
-            <p>Belum ada trek audio</p>
-            <span>Upload file untuk mulai mengedit</span>
-          </div>
+        <div class="stat" data-accent="violet">
+          <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+          <div class="stat-body"><b id="statDur">0:00</b><span>Durasi asli</span></div>
+          <div class="stat-glow"></div>
+        </div>
+        <div class="stat" data-accent="magenta">
+          <div class="stat-icon"><i class="bi bi-stars"></i></div>
+          <div class="stat-body"><b id="statEst">0:00</b><span>Estimasi hasil</span></div>
+          <div class="stat-glow"></div>
+        </div>
+        <div class="stat" data-accent="green">
+          <div class="stat-icon"><i class="bi bi-hdd-network"></i></div>
+          <div class="stat-body"><b id="statMem">0 MB</b><span>Memori audio</span></div>
+          <div class="stat-glow"></div>
         </div>
       </section>
 
-      <!-- Right Panel - Controls -->
-      <aside class="console">
-        <!-- Parameters Card -->
-        <div class="console-card">
-          <div class="console-head">
-            <i class="bi bi-sliders"></i>
-            <span>Parameter</span>
-          </div>
-
-          <div class="control-group">
-            <div class="control-block">
-              <div class="control-row">
-                <span class="control-name">
-                  <i class="bi bi-speedometer2"></i> Kecepatan
-                </span>
-                <span class="control-value" id="speedVal">1.0×</span>
-              </div>
-              <input type="range" id="speed" min="0.5" max="3" step="0.1" value="1">
+      <div class="workspace">
+        <!-- Left: tracks -->
+        <section class="panel track-panel">
+          <div class="panel-head">
+            <div class="panel-title"><i class="bi bi-soundwave"></i>
+              <h2>Trek Audio</h2>
             </div>
-
-            <div class="control-block">
-              <div class="control-row">
-                <span class="control-name">
-                  <i class="bi bi-volume-up"></i> Amplifikasi
-                </span>
-                <span class="control-value" id="ampVal">0 dB</span>
+            <div class="panel-head-right">
+              <div class="search-wrap">
+                <i class="bi bi-search"></i>
+                <input type="text" id="searchInput" placeholder="Cari trek..." autocomplete="off">
               </div>
-              <input type="range" id="amp" min="-10" max="10" value="0">
-            </div>
-
-            <div class="control-block">
-              <div class="control-row">
-                <span class="control-name">
-                  <i class="bi bi-arrow-up-right"></i> Fade In
-                </span>
-                <span class="control-value" id="fadeInVal">0.0s</span>
-              </div>
-              <input type="range" id="fadeIn" min="0" max="5" step="0.1" value="0">
-            </div>
-
-            <div class="control-block">
-              <div class="control-row">
-                <span class="control-name">
-                  <i class="bi bi-arrow-down-right"></i> Fade Out
-                </span>
-                <span class="control-value" id="fadeOutVal">0.0s</span>
-              </div>
-              <input type="range" id="fadeOut" min="0" max="5" step="0.1" value="0">
+              <span class="count-pill" id="trackCount">0 file</span>
             </div>
           </div>
 
-          <div class="toggle-group">
-            <div class="control-block">
-              <div class="toggle-row">
-                <span class="control-name">
-                  <i class="bi bi-arrow-left-right"></i> Reverse
-                </span>
-                <label class="switch">
-                  <input type="checkbox" id="reverseToggle">
-                  <span class="track-sw"></span>
-                </label>
+          <label class="drop-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept="audio/*" multiple>
+            <div class="drop-content">
+              <div class="drop-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+              <p class="drop-title">Klik atau seret file audio ke sini</p>
+              <p class="drop-sub">MP3, WAV, OGG, AAC, M4A, FLAC</p>
+              <span class="drop-badge"><i class="bi bi-plus-circle"></i> Multi-file</span>
+            </div>
+            <div class="drop-ripple" id="dropRipple"></div>
+          </label>
+
+          <div class="track-list" id="trackList">
+            <div class="empty-state" id="emptyState">
+              <div class="empty-icon"><i class="bi bi-music-note-beamed"></i></div>
+              <p>Belum ada trek audio</p><span>Upload file untuk mulai mengedit</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right: console -->
+        <aside class="console">
+          <!-- 1. Now Playing (paling atas — paling sering dilihat) -->
+          <div class="console-card now-playing-card">
+            <div class="console-head"><i class="bi bi-activity"></i><span>Sedang diputar</span></div>
+            <div class="now-playing-content">
+              <div class="now-icon" id="nowIcon"><i class="bi bi-music-note"></i></div>
+              <div class="now-info">
+                <div class="now-name" id="nowName">Tidak ada</div>
+                <div class="now-sub" id="nowSub">Klik play pada trek</div>
               </div>
             </div>
-
-            <div class="control-block">
-              <div class="toggle-row">
-                <span class="control-name">
-                  <i class="bi bi-graph-up"></i> Auto-Level
-                </span>
-                <label class="switch">
-                  <input type="checkbox" id="autoLevelToggle">
-                  <span class="track-sw"></span>
-                </label>
-              </div>
+            <div class="now-progress">
+              <div id="nowProgressBar"></div>
+            </div>
+            <div class="now-time"><span id="nowCur">0:00</span><span id="nowTot">0:00</span></div>
+            <div class="meter-row" id="meterRow">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
           </div>
 
-          <button class="reset-link" id="resetBtn">
-            <i class="bi bi-arrow-counterclockwise"></i>
-            Reset Parameter
-          </button>
+          <!-- 2. Preset cepat -->
+          <div class="console-card">
+            <div class="console-head"><i class="bi bi-magic"></i><span>Preset cepat</span></div>
+            <div class="presets">
+              <button class="chip" data-p="podcast"><i class="bi bi-mic"></i>Podcast</button>
+              <button class="chip" data-p="nightcore"><i class="bi bi-lightning-charge"></i>Nightcore</button>
+              <button class="chip" data-p="slowed"><i class="bi bi-moon-stars"></i>Slowed</button>
+              <button class="chip" data-p="bass"><i class="bi bi-speaker"></i>Bass Boost</button>
+              <button class="chip" data-p="lofi"><i class="bi bi-cup-hot"></i>Lo-Fi</button>
+              <button class="chip" data-p="vocal"><i class="bi bi-person-badge"></i>Vocal</button>
+            </div>
+          </div>
+
+          <!-- 3. Parameter -->
+          <div class="console-card">
+            <div class="console-head"><i class="bi bi-sliders"></i><span>Parameter</span></div>
+            <div class="control-group">
+              <div class="control-block">
+                <div class="control-row"><span class="control-name"><i
+                      class="bi bi-speedometer2"></i>Kecepatan</span><span class="control-value"
+                    id="speedVal">1.0×</span></div>
+                <input type="range" id="speed" min="0.5" max="3" step="0.1" value="1">
+              </div>
+              <div class="control-block">
+                <div class="control-row"><span class="control-name"><i
+                      class="bi bi-volume-up"></i>Amplifikasi</span><span class="control-value" id="ampVal">0 dB</span>
+                </div>
+                <input type="range" id="amp" min="-10" max="10" value="0">
+              </div>
+              <div class="control-block">
+                <div class="control-row"><span class="control-name"><i class="bi bi-speaker"></i>Bass</span><span
+                    class="control-value" id="bassVal">0 dB</span></div>
+                <input type="range" id="bass" min="-12" max="12" value="0">
+              </div>
+              <div class="control-block">
+                <div class="control-row"><span class="control-name"><i class="bi bi-arrow-up-right"></i>Fade
+                    In</span><span class="control-value" id="fadeInVal">0.0s</span></div>
+                <input type="range" id="fadeIn" min="0" max="5" step="0.1" value="0">
+              </div>
+              <div class="control-block">
+                <div class="control-row"><span class="control-name"><i class="bi bi-arrow-down-right"></i>Fade
+                    Out</span><span class="control-value" id="fadeOutVal">0.0s</span></div>
+                <input type="range" id="fadeOut" min="0" max="5" step="0.1" value="0">
+              </div>
+            </div>
+
+            <div class="toggle-group">
+              <div class="control-block">
+                <div class="toggle-row"><span class="control-name"><i class="bi bi-arrow-left-right"></i>Reverse</span>
+                  <label class="switch"><input type="checkbox" id="reverseToggle"><span class="track-sw"></span></label>
+                </div>
+              </div>
+              <div class="control-block">
+                <div class="toggle-row"><span class="control-name"><i class="bi bi-graph-up"></i>Auto-Level</span>
+                  <label class="switch"><input type="checkbox" id="autoLevelToggle"><span
+                      class="track-sw"></span></label>
+                </div>
+              </div>
+              <div class="control-block">
+                <div class="toggle-row"><span class="control-name"><i class="bi bi-broadcast"></i>Loop Preview</span>
+                  <label class="switch"><input type="checkbox" id="loopToggle"><span class="track-sw"></span></label>
+                </div>
+              </div>
+            </div>
+            <button class="reset-link" id="resetBtn"><i class="bi bi-arrow-counterclockwise"></i>Reset
+              Parameter</button>
+          </div>
+
+          <!-- 4. Export -->
+          <div class="console-card">
+            <div class="console-head"><i class="bi bi-download"></i><span>Ekspor</span></div>
+            <select class="format-select" id="format">
+              <option value="mp3">MP3 — Kecil (128kbps)</option>
+              <option value="wav">WAV — HD</option>
+              <option value="ogg">OGG — Standar</option>
+            </select>
+            <div class="export-info" id="exportInfo">Estimasi: —</div>
+            <button class="btn-download" id="downloadBtn" disabled>
+              <i class="bi bi-download"></i><span id="downloadBtnLabel">Download</span>
+            </button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ═══════════ TAB: LIBRARY ═══════════ -->
+    <section class="tab-page" id="tab-library">
+      <div class="page-head">
+        <div>
+          <h2 class="page-title"><i class="bi bi-collection"></i> Library</h2>
+          <p class="page-sub">Semua trek yang sudah dimuat. Klik trek untuk menjadikannya aktif di Studio.</p>
         </div>
-
-        <!-- Export Card -->
-        <div class="console-card">
-          <div class="console-head">
-            <i class="bi bi-download"></i>
-            <span>Ekspor</span>
-          </div>
-
-          <select class="format-select" id="format">
-            <option value="mp3">MP3 — Kecil</option>
-            <option value="wav">WAV — HD</option>
-            <option value="ogg">OGG — Standar</option>
-          </select>
-
-          <button class="btn-download" id="downloadBtn" disabled>
-            <i class="bi bi-download"></i>
-            <span id="downloadBtnLabel">Download</span>
-          </button>
+        <button class="btn-secondary" id="libRefreshBtn"><i class="bi bi-arrow-clockwise"></i> Segarkan</button>
+      </div>
+      <div class="lib-grid" id="libGrid">
+        <div class="empty-state" id="libEmpty">
+          <div class="empty-icon"><i class="bi bi-inboxes"></i></div>
+          <p>Library kosong</p><span>Upload trek di tab Studio</span>
         </div>
+      </div>
+    </section>
 
-        <!-- Now Playing Card -->
-        <div class="console-card now-playing-card">
-          <div class="console-head">
-            <i class="bi bi-activity"></i>
-            <span>Playing</span>
-          </div>
-
-          <div class="now-playing-content">
-            <div class="now-icon">
-              <i class="bi bi-music-note"></i>
-            </div>
-            <div class="now-info">
-              <div class="now-name" id="nowName">Tidak ada</div>
-              <div class="now-sub" id="nowSub">Klik play</div>
-            </div>
-          </div>
-
-          <div class="meter-row" id="meterRow">
-            <span></span><span></span><span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span><span></span><span></span>
-          </div>
+    <!-- ═══════════ TAB: GUIDE ═══════════ -->
+    <section class="tab-page" id="tab-guide">
+      <div class="page-head">
+        <div>
+          <h2 class="page-title"><i class="bi bi-book"></i> Panduan</h2>
+          <p class="page-sub">Cara pakai A-LABS Audio Editor dengan efisien.</p>
         </div>
-      </aside>
-    </div>
+      </div>
+
+      <div class="guide-grid">
+        <article class="guide-card">
+          <div class="guide-head"><i class="bi bi-cloud-arrow-up"></i>
+            <h3>Upload &amp; Memuat</h3>
+          </div>
+          <ul>
+            <li>Klik area <b>Drop Zone</b> atau seret file ke sana.</li>
+            <li>Multi-file didukung — semua diantre &amp; di-decode otomatis.</li>
+            <li>Format: MP3, WAV, OGG, AAC, M4A, FLAC.</li>
+            <li>Status tiap trek: <b>Load</b> → <b>OK</b> (siap) atau <b>Error</b>.</li>
+          </ul>
+        </article>
+
+        <article class="guide-card">
+          <div class="guide-head"><i class="bi bi-play-circle"></i>
+            <h3>Pemutaran</h3>
+          </div>
+          <ul>
+            <li>Tombol <b>Play/Stop</b> ada di setiap trek.</li>
+            <li>Tekan <kbd>Spasi</kbd> untuk play/stop trek aktif.</li>
+            <li>Klik area waveform untuk <b>lompat posisi</b>.</li>
+            <li>Posisi pause tersimpan — play lagi melanjutkan.</li>
+            <li>Aktifkan <b>Loop Preview</b> untuk mengulang terus.</li>
+          </ul>
+        </article>
+
+        <article class="guide-card">
+          <div class="guide-head"><i class="bi bi-sliders"></i>
+            <h3>Parameter Edit</h3>
+          </div>
+          <ul>
+            <li><b>Kecepatan</b> 0.5× – 3.0× (pitch ikut berubah).</li>
+            <li><b>Amplifikasi</b> ±10 dB (volume keseluruhan).</li>
+            <li><b>Bass</b> ±12 dB (lowshelf 200 Hz).</li>
+            <li><b>Fade In / Out</b> 0 – 5 detik.</li>
+            <li><b>Reverse</b> membalik audio, <b>Auto-Level</b> menormalkan puncak.</li>
+          </ul>
+        </article>
+
+        <article class="guide-card">
+          <div class="guide-head"><i class="bi bi-magic"></i>
+            <h3>Preset Cepat</h3>
+          </div>
+          <ul>
+            <li><b>Podcast</b> — vokal jernih, fade halus.</li>
+            <li><b>Nightcore</b> — cepat &amp; tinggi.</li>
+            <li><b>Slowed</b> — lambat &amp; bass lembut.</li>
+            <li><b>Bass Boost</b> — bass kuat.</li>
+            <li><b>Lo-Fi</b> — hangat &amp; lambat.</li>
+            <li><b>Vocal</b> — vokal dominan.</li>
+          </ul>
+        </article>
+
+        <article class="guide-card">
+          <div class="guide-head"><i class="bi bi-download"></i>
+            <h3>Ekspor</h3>
+          </div>
+          <ul>
+            <li>Pilih format: <b>MP3</b>, <b>WAV</b>, <b>OGG</b>.</li>
+            <li>Klik <b>Download</b> — semua trek siap diekspor sekaligus.</li>
+            <li>Proses <b>offline</b> di browser, tanpa server.</li>
+            <li>Bar progress muncul di tiap trek yang diproses.</li>
+          </ul>
+        </article>
+
+        <article class="guide-card">
+          <div class="guide-head"><i class="bi bi-keyboard"></i>
+            <h3>Shortcut</h3>
+          </div>
+          <ul>
+            <li><kbd>Spasi</kbd> — Play / Stop trek aktif.</li>
+            <li><kbd>Esc</kbd> — Stop semua pemutaran.</li>
+            <li>Klik waveform — lompat posisi.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
   </main>
 
-  <!-- Simple Footer -->
   <footer class="footer">
     <div class="footer-container">
-      <div class="footer-content">
-        <span>LMNS Studio — Audio Editor</span>
-        <span class="footer-separator">•</span>
-        <span>by A-Labs</span>
-      </div>
-      <div class="footer-shortcut">
-        <span>Shortcut: Spasi = Play/Stop</span>
-      </div>
+      <span>A-LABS Audio Editor · <span id="footerYear"></span></span>
+      <span class="footer-shortcut"><kbd>Spasi</kbd> Play/Stop &nbsp; <kbd>Esc</kbd> Stop</span>
     </div>
   </footer>
 
   <div class="toast-stack" id="toastStack" aria-live="polite"></div>
-
-  <!-- Scripts -->
   <script src="app.js"></script>
 </body>
 
