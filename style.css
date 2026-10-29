@@ -25,8 +25,8 @@
   --r-sm: 12px;
   --t: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
-  --font-ui: "Inter", system-ui, sans-serif;
-  --font-display: "Space Grotesk", var(--font-ui);
+  --font-ui: "Poppins", system-ui, sans-serif;
+  --font-display: "Montserrat", var(--font-ui);
 }
 
 body.light {
@@ -746,31 +746,14 @@ body.light .bg-grid {
     transform: translateY(-10px) scale(0.98);
   }
 }
-.track::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--grad);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
 .track:hover {
   border-color: rgba(34, 211, 238, 0.35);
   transform: translateX(3px);
-}
-.track:hover::before {
-  opacity: 0.6;
 }
 .track.is-active {
   border-color: var(--cyan);
   background: rgba(34, 211, 238, 0.06);
   box-shadow: 0 0 30px rgba(34, 211, 238, 0.12);
-}
-.track.is-active::before {
-  opacity: 1;
 }
 .track.is-error {
   border-color: rgba(248, 113, 113, 0.4);
@@ -989,17 +972,19 @@ body.light .wave-wrap {
   color: var(--cyan);
 }
 
+/* ══ Preset chips + per-chip reset ══ */
 .presets {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.42rem;
 }
+
 .chip {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  padding: 0.52rem 0.4rem;
+  padding: 0.55rem 0.4rem;
   border-radius: 10px;
   font: 500 0.72rem var(--font-ui);
   color: var(--label);
@@ -1007,25 +992,99 @@ body.light .wave-wrap {
   border: 1px solid var(--border);
   cursor: pointer;
   transition: var(--t);
-  position: relative;
-  overflow: hidden;
+}
+.chip-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  pointer-events: none;
+}
+.chip-label i {
+  font-size: 0.82rem;
 }
 .chip:hover {
   color: var(--text);
-  border-color: var(--violet);
-  background: rgba(139, 92, 246, 0.14);
-  transform: translateY(-2px);
+  border-color: rgba(139, 92, 246, 0.55);
+  background: rgba(139, 92, 246, 0.1);
+  transform: translateY(-1px);
 }
 .chip:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 .chip.on {
   color: #fff;
   border-color: transparent;
   background: var(--grad);
-  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+}
+.chip.on:hover {
+  transform: translateY(-1px);
 }
 
+/* Per-chip reset button (×) */
+.chip-reset {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--panel-solid);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  display: none;
+  place-items: center;
+  cursor: pointer;
+  font-size: 0.7rem;
+  transition: var(--t);
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.chip-reset i {
+  pointer-events: none;
+}
+.chip-reset:hover {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+  transform: scale(1.15);
+}
+/* Only show the per-chip reset when the chip is active */
+.chip.on .chip-reset {
+  display: grid;
+}
+
+/* Full-width reset-all-presets button */
+.btn-reset-presets {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 10px;
+  font: 600 0.74rem var(--font-ui);
+  color: var(--label);
+  background: var(--inset);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: var(--t);
+}
+.btn-reset-presets i {
+  font-size: 0.85rem;
+}
+.btn-reset-presets:hover {
+  color: var(--red);
+  border-color: var(--red);
+  background: rgba(248, 113, 113, 0.08);
+}
+.btn-reset-presets:hover i {
+  transform: rotate(-180deg);
+  transition: transform 0.4s;
+}
+
+/* Control blocks */
 .control-group,
 .toggle-group {
   display: flex;
@@ -1078,6 +1137,36 @@ body.light .wave-wrap {
   border-radius: 6px;
   padding: 2px 8px;
   font-variant-numeric: tabular-nums;
+}
+
+/* Full-width reset-parameters button */
+.btn-reset-params {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 10px;
+  font: 600 0.74rem var(--font-ui);
+  color: var(--label);
+  background: var(--inset);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: var(--t);
+}
+.btn-reset-params i {
+  font-size: 0.85rem;
+}
+.btn-reset-params:hover {
+  color: var(--amber);
+  border-color: var(--amber);
+  background: rgba(251, 191, 36, 0.08);
+}
+.btn-reset-params:hover i {
+  transform: rotate(-180deg);
+  transition: transform 0.4s;
 }
 
 input[type="range"] {
@@ -1167,28 +1256,6 @@ body.light .track-sw {
 .switch input:checked + .track-sw::before {
   transform: translateX(18px);
   background: #fff;
-}
-
-.reset-link {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 0.85rem;
-  background: none;
-  border: 0;
-  color: var(--muted);
-  font: 0.74rem var(--font-ui);
-  cursor: pointer;
-  transition: var(--t);
-}
-.reset-link:hover {
-  color: var(--cyan);
-}
-.reset-link:hover i {
-  transform: rotate(-180deg);
-}
-.reset-link i {
-  transition: transform 0.4s;
 }
 
 .format-select {
@@ -1371,11 +1438,55 @@ body.light .meter-row span {
   color: var(--cyan);
   border-color: var(--cyan);
 }
+
+/* Library grid — place-items center for the empty state, auto-fill for cards */
 .lib-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.8rem;
+  place-items: stretch;
+  min-height: 320px;
 }
+
+/* Library empty state — CENTERED */
+.lib-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: var(--panel);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r);
+  min-height: 320px;
+  animation: pageIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.lib-empty-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 2.2rem;
+  background: var(--inset);
+  color: var(--muted);
+  margin-bottom: 0.9rem;
+  animation: float 4s ease-in-out infinite;
+}
+.lib-empty-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--label);
+  margin-bottom: 0.25rem;
+}
+.lib-empty-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
 .lib-card {
   background: var(--panel);
   border: 1px solid var(--border);

@@ -37,6 +37,7 @@
 
   const formatSelect = $("format");
   const resetBtn = $("resetBtn");
+  const resetPresetsBtn = $("resetPresetsBtn");
   const clearAllBtn = $("clearAllBtn");
   const themeBtn = $("themeBtn");
   const headerStatus = $("headerStatus");
@@ -56,7 +57,6 @@
   const statEst = $("statEst");
   const statMem = $("statMem");
 
-  // Library + tab DOM
   const libGrid = $("libGrid");
   const libEmpty = $("libEmpty");
   const libRefreshBtn = $("libRefreshBtn");
@@ -70,7 +70,6 @@
     loaderFill.style.width = pct + "%";
     if (msg) loaderStatus.textContent = msg;
   }
-
   function hideLoader() {
     setLoader(100, "Siap");
     setTimeout(() => {
@@ -81,20 +80,12 @@
     }, 350);
   }
 
-  // Startup sequence
   setLoader(10, "Menyiapkan editor…");
-  if (audioCtx.state === "suspended") {
-    audioCtx.resume().catch(() => {});
-  }
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
   setTimeout(() => setLoader(45, "Memuat antarmuka…"), 200);
   setTimeout(() => setLoader(80, "Hampir siap…"), 450);
-  window.addEventListener("load", () => {
-    setTimeout(hideLoader, 500);
-  });
-  // fallback if load already fired
-  if (document.readyState === "complete") {
-    setTimeout(hideLoader, 700);
-  }
+  window.addEventListener("load", () => setTimeout(hideLoader, 500));
+  if (document.readyState === "complete") setTimeout(hideLoader, 700);
 
   // ── Theme ───────────────────────────────────────────
   const savedTheme = localStorage.getItem("alabs-theme");
@@ -787,7 +778,6 @@
   function renderLibrary() {
     if (!libGrid) return;
     const list = [...items.values()];
-    // Clear except empty state
     [...libGrid.querySelectorAll(".lib-card")].forEach((el) => el.remove());
 
     if (list.length === 0) {
@@ -820,7 +810,6 @@
         </div>
       `;
       card.addEventListener("click", () => {
-        // Switch to studio + activate
         const studioTab = document.querySelector('.nav-tab[data-tab="studio"]');
         if (studioTab) studioTab.click();
         activeTrack = item;
@@ -830,7 +819,6 @@
       });
       libGrid.appendChild(card);
 
-      // mini waveform
       const cvs = card.querySelector("canvas");
       if (cvs && item.peaks) {
         requestAnimationFrame(() => {
@@ -979,53 +967,109 @@
     },
   };
 
+  const DEFAULT_PARAMS = {
+    speed: 1,
+    amp: 0,
+    bass: 0,
+    fadeIn: 0,
+    fadeOut: 0,
+    reverse: false,
+    autoLevel: false,
+  };
+
+  function applyPresetParams(p) {
+    setSlider(speedInput, speedValDisplay, p.speed, (v) => v.toFixed(1) + "×");
+    setSlider(
+      amplificationInput,
+      amplificationValDisplay,
+      p.amp,
+      (v) => (v >= 0 ? "+" : "") + v + " dB",
+    );
+    setSlider(
+      bassInput,
+      bassValDisplay,
+      p.bass,
+      (v) => (v >= 0 ? "+" : "") + v + " dB",
+    );
+    setSlider(
+      fadeInInput,
+      fadeInValDisplay,
+      p.fadeIn,
+      (v) => v.toFixed(1) + "s",
+    );
+    setSlider(
+      fadeOutInput,
+      fadeOutValDisplay,
+      p.fadeOut,
+      (v) => v.toFixed(1) + "s",
+    );
+    reverseToggle.checked = p.reverse;
+    reverseToggle.dispatchEvent(new Event("change"));
+    autoLevelToggle.checked = p.autoLevel;
+    autoLevelToggle.dispatchEvent(new Event("change"));
+    resetDownloadedStatuses();
+    updateStats();
+  }
+
+  function resetToDefaults() {
+    applyPresetParams(DEFAULT_PARAMS);
+  }
+
+  // Chip click → apply preset
   document.querySelectorAll(".chip").forEach((chip) => {
-    chip.addEventListener("click", () => {
+    chip.addEventListener("click", (e) => {
+      if (e.target.closest(".chip-reset")) return; // reset button handled separately
       const p = PRESETS[chip.dataset.p];
       if (!p) return;
       document
         .querySelectorAll(".chip")
         .forEach((c) => c.classList.remove("on"));
       chip.classList.add("on");
-      setSlider(
-        speedInput,
-        speedValDisplay,
-        p.speed,
-        (v) => v.toFixed(1) + "×",
+      applyPresetParams(p);
+      showToast(
+        "success",
+        `Preset "${chip.querySelector(".chip-label").textContent.trim()}" diterapkan`,
       );
-      setSlider(
-        amplificationInput,
-        amplificationValDisplay,
-        p.amp,
-        (v) => (v >= 0 ? "+" : "") + v + " dB",
-      );
-      setSlider(
-        bassInput,
-        bassValDisplay,
-        p.bass,
-        (v) => (v >= 0 ? "+" : "") + v + " dB",
-      );
-      setSlider(
-        fadeInInput,
-        fadeInValDisplay,
-        p.fadeIn,
-        (v) => v.toFixed(1) + "s",
-      );
-      setSlider(
-        fadeOutInput,
-        fadeOutValDisplay,
-        p.fadeOut,
-        (v) => v.toFixed(1) + "s",
-      );
-      reverseToggle.checked = p.reverse;
-      reverseToggle.dispatchEvent(new Event("change"));
-      autoLevelToggle.checked = p.autoLevel;
-      autoLevelToggle.dispatchEvent(new Event("change"));
-      resetDownloadedStatuses();
-      updateStats();
-      showToast("success", `Preset "${chip.textContent.trim()}" diterapkan`);
     });
   });
+
+  // Per-chip reset button (×)
+  document.querySelectorAll(".chip-reset").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const presetKey = btn.dataset.reset;
+      const chip = btn.closest(".chip");
+      if (!chip) return;
+      const wasActive = chip.classList.contains("on");
+      chip.classList.remove("on");
+      if (wasActive) {
+        resetToDefaults();
+        showToast(
+          "success",
+          `Preset "${chip.querySelector(".chip-label").textContent.trim()}" direset`,
+        );
+      } else {
+        showToast("warning", "Preset tidak aktif");
+      }
+      void presetKey;
+    });
+  });
+
+  // Reset ALL presets button
+  if (resetPresetsBtn) {
+    resetPresetsBtn.addEventListener("click", () => {
+      const anyActive = document.querySelectorAll(".chip.on").length > 0;
+      document
+        .querySelectorAll(".chip")
+        .forEach((c) => c.classList.remove("on"));
+      if (anyActive) {
+        resetToDefaults();
+        showToast("success", "Semua preset direset");
+      } else {
+        showToast("warning", "Tidak ada preset aktif");
+      }
+    });
+  }
 
   function setSlider(input, display, val, fmt) {
     input.value = val;
@@ -1033,29 +1077,10 @@
     input.dispatchEvent(new Event("input"));
   }
 
-  // ── Reset / clear ───────────────────────────────────
+  // ── Reset / clear (parameter) ───────────────────────
   resetBtn.addEventListener("click", () => {
-    setSlider(speedInput, speedValDisplay, 1, (v) => v.toFixed(1) + "×");
-    setSlider(
-      amplificationInput,
-      amplificationValDisplay,
-      0,
-      (v) => (v >= 0 ? "+" : "") + v + " dB",
-    );
-    setSlider(
-      bassInput,
-      bassValDisplay,
-      0,
-      (v) => (v >= 0 ? "+" : "") + v + " dB",
-    );
-    setSlider(fadeInInput, fadeInValDisplay, 0, (v) => v.toFixed(1) + "s");
-    setSlider(fadeOutInput, fadeOutValDisplay, 0, (v) => v.toFixed(1) + "s");
-    reverseToggle.checked = false;
-    reverseToggle.dispatchEvent(new Event("change"));
-    autoLevelToggle.checked = false;
+    resetToDefaults();
     document.querySelectorAll(".chip").forEach((c) => c.classList.remove("on"));
-    resetDownloadedStatuses();
-    updateStats();
     showToast("success", "Parameter direset");
   });
 
