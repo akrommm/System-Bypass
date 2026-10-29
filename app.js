@@ -780,6 +780,7 @@
     const list = [...items.values()];
     [...libGrid.querySelectorAll(".lib-card")].forEach((el) => el.remove());
 
+    // Empty state
     if (list.length === 0) {
       if (libEmpty) libEmpty.style.display = "";
       return;
@@ -789,12 +790,38 @@
     list.forEach((item) => {
       const card = document.createElement("div");
       card.className = "lib-card";
+
       const dur = item.buffer ? formatDuration(item.buffer.duration) : "—";
       const sizeKb = (item.file.size / 1024).toFixed(0);
       const sizeLabel =
         sizeKb > 1024
           ? (item.file.size / 1024 / 1024).toFixed(1) + " MB"
           : sizeKb + " KB";
+
+      // Tentukan label status yang lebih akurat
+      let statusText = "Memuat";
+      let statusClass = "";
+      if (item.status === "loaded") {
+        statusText = "Siap";
+        statusClass = "tag-siap";
+      } else if (item.status === "downloaded") {
+        statusText = "Selesai";
+        statusClass = "tag-done";
+      } else if (item.status === "error") {
+        statusText = "Error";
+        statusClass = "tag-err";
+      } else if (item.status === "processing") {
+        statusText = "Proses";
+        statusClass = "tag-proc";
+      }
+
+      // Cek apakah sedang diputar
+      const isPlaying = item.isPlaying;
+      if (isPlaying) {
+        statusText = "Playing";
+        statusClass = "tag-play";
+      }
+
       card.innerHTML = `
         <div class="lib-card-head">
           <div class="lib-card-icon"><i class="bi bi-music-note-beamed"></i></div>
@@ -805,10 +832,11 @@
         </div>
         <div class="mini-wave"><canvas></canvas></div>
         <div class="lib-card-tags">
-          <span class="lib-tag">${item.status === "loaded" ? "Siap" : item.status === "downloaded" ? "Selesai" : item.status === "error" ? "Error" : "Memuat"}</span>
+          <span class="lib-tag ${statusClass}">${statusText}</span>
           <span class="lib-tag">${item.file.type || "audio"}</span>
         </div>
       `;
+
       card.addEventListener("click", () => {
         const studioTab = document.querySelector('.nav-tab[data-tab="studio"]');
         if (studioTab) studioTab.click();
@@ -823,17 +851,19 @@
       if (cvs && item.peaks) {
         requestAnimationFrame(() => {
           const dpr = window.devicePixelRatio || 1;
-          const w = cvs.clientWidth || 180;
+          const w = cvs.clientWidth || 200;
           const h = cvs.clientHeight || 30;
           cvs.width = w * dpr;
           cvs.height = h * dpr;
           const ctx = cvs.getContext("2d");
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
           ctx.clearRect(0, 0, w, h);
+
           const grad = ctx.createLinearGradient(0, 0, w, 0);
           grad.addColorStop(0, "#22d3ee");
           grad.addColorStop(1, "#f43f8e");
           ctx.fillStyle = grad;
+
           const n = item.peaks.length;
           const barW = w / n;
           const mid = h / 2;

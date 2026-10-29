@@ -1439,13 +1439,13 @@ body.light .meter-row span {
   border-color: var(--cyan);
 }
 
-/* Library grid — place-items center for the empty state, auto-fill for cards */
+/* Library grid */
 .lib-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.8rem;
-  place-items: stretch;
-  min-height: 320px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.9rem;
+  align-items: start; /* <-- INI KUNCINYA: card tidak melar ke bawah */
+  min-height: 200px;
 }
 
 /* Library empty state — CENTERED */
@@ -1460,8 +1460,7 @@ body.light .meter-row span {
   background: var(--panel);
   border: 1px dashed var(--border-strong);
   border-radius: var(--r);
-  min-height: 320px;
-  animation: pageIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  min-height: 320px; /* biarkan ini agar empty state tetap tinggi & center */
 }
 .lib-empty-icon {
   width: 76px;
@@ -1540,6 +1539,31 @@ body.light .meter-row span {
   color: var(--label);
   background: var(--inset);
   border: 1px solid var(--border);
+}
+.lib-tag.tag-siap {
+  color: var(--green);
+  border-color: rgba(52, 211, 153, 0.3);
+  background: rgba(52, 211, 153, 0.1);
+}
+.lib-tag.tag-done {
+  color: var(--violet);
+  border-color: rgba(139, 92, 246, 0.3);
+  background: rgba(139, 92, 246, 0.1);
+}
+.lib-tag.tag-err {
+  color: var(--red);
+  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(248, 113, 113, 0.1);
+}
+.lib-tag.tag-proc {
+  color: var(--cyan);
+  border-color: rgba(34, 211, 238, 0.3);
+  background: rgba(34, 211, 238, 0.1);
+}
+.lib-tag.tag-play {
+  color: #fff;
+  background: var(--grad);
+  border-color: transparent;
 }
 .lib-card .mini-wave {
   height: 30px;
